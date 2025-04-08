@@ -1,26 +1,53 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import (Flask, render_template, request, redirect, 
+    url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
-
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user
 app = Flask(__name__)
 
+app.config['SECRET_KEY'] = 'IFSC2025'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+#Configuração do Flask-Login
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
 #Modelo do usuário
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 @app.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('Usuário não existe!')
+            return redirect(url_for('login'))
+        if not check_password_hash(user.password, password):
+            flash("Senha inválida!")
+            return redirect(url_for('login'))
+        
+        login_user(user)
+        return redirect(url_for('home'))
+        
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -44,7 +71,8 @@ def signup():
         if len(erros) > 0:
             return render_template('signup.html', erros=erros, name=name, email=email)
         else:
-            user = User(name=name, email=email, password=password1)
+            senha_hash = generate_password_hash(password1)
+            user = User(name=name, email=email, password=senha_hash)
             db.session.add(user)
             db.session.commit()
             return redirect(url_for('home'))
