@@ -1,0 +1,17 @@
+# Ignora os arquivos de configuração do ambiente virtual
+venv/
+.env
+.flask-env/
+
+# Ignora arquivos compilados e caches
+__pycache__/
+*.py[cod]
+
+# Ignora logs e arquivos de depuração
+*.log
+
+# Ignora a pasta de uploads (se aplicável)
+uploads/
+
+# Ignora o arquivo de banco de dados SQLite
+*.sqlite3
