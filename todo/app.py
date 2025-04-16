@@ -2,7 +2,7 @@ from flask import (Flask, render_template, request, redirect,
     url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, UserMixin, login_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'IFSC2025'
@@ -23,11 +23,21 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
 
+#Modelo da tarefa
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    complete =db.Column(db.Boolean)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 @app.route('/')
+@login_required
 def home():
     return render_template('home.html')
 
@@ -78,6 +88,11 @@ def signup():
             return redirect(url_for('home'))
     
     return render_template('signup.html')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 
 def create_tables():

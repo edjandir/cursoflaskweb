@@ -14,3 +14,8 @@
     text-align: center;
     margin-top: 20px;
 }
+
+.comando {
+    display: flex;
+    justify-content: space-between;
+}

@@ -35,8 +35,12 @@
                 <label for="confirmPassword">Confirm Password</label>
                 <input type="password" class="form-control" name="password2" id="password2">
             </div>
-
-            <button type="submit" class="btn btn-primary">Submit</button>
+            
+            <div class="comando">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <p>Já tem uma conta? Faça o login
+                    <a href="{{url_for('login')}}"> aqui.</a></p>
+                </div>
         </form>
     </div>
 </div>
