@@ -2,7 +2,7 @@ from flask import (Flask, render_template, request, redirect,
     url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'IFSC2025'
@@ -22,6 +22,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    tasks = db.relationship('Task', backref='user', lazy=True)
 
 #Modelo da tarefa
 class Task(db.Model):
@@ -36,9 +37,22 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
+    if request.method == 'POST':
+        if request.form.get('newTask'):
+            name = request.form.get('nova')
+            if len(name) > 2:
+                current_user.tasks.append(Task(name=name, complete=False))
+                db.session.commit()
+        elif request.form.get('editTask'):
+            id = request.form.get("taskId")
+            task = db.session.get(Task, id)
+            task.name = request.form.get('t' + str(task.id))
+            task.complete = request.form.get('c' + str(task.id)) == 'clicked'
+            db.session.commit()
+
     return render_template('home.html')
 
 @app.route('/login', methods=['GET', 'POST'])

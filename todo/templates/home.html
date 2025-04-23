@@ -5,5 +5,38 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Home</h1>
+    <h1 class="mt-3">Lista de tarefas</h1>
+    <form method="POST">
+        <div class="input-group mb-3">
+            <input class="form-control" type="text" name="nova" id="nova">
+            <button type="submit" name="newTask" value="newTask"
+                class="btn btn-success">
+                <i class="bi bi-plus-square-fill"></i>
+            </button>
+        </div>
+    
+
+    {% for task in current_user.tasks %}
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                {% if task.complete %}
+                    <input type="checkbox" value="clicked" name="c{{ task.id }}" checked>
+                {% else %}
+                    <input type="checkbox" value="clicked" name="c{{ task.id }}">
+                {% endif %}
+            </div>
+        </div>
+        <input type="hidden" name="taskId" value="{{ task.id }}"/>
+        <input type="text" value="{{ task.name }}" name="t{{ task.id }}" class="form-control">
+        <button type="submit" name="editTask" value="editTask"
+            class="btn btn-success">
+                <i class="bi bi-check"></i>
+        </button>
+        <button type="button" class="btn btn-danger" onClick="delete({{ task.id }})">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+    {% endfor %}
+    </form>
 {% endblock %}
